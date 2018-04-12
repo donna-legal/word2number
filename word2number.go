@@ -107,19 +107,23 @@ func (mas matches) Swap(i, j int) {
 }
 
 func (mas matches) splitOn(tyype int) (before matches, after matches) {
-	var split bool
+	var split, divider bool
 	for _, m := range mas {
-		if m.tyype == tyype {
-			split = true
-			continue
-		}
-		if split {
-			before = append(before, m)
-		} else {
+		switch m.tyype {
+		case dividerKey:
+			divider = true
 			after = append(after, m)
+		case decimalKey:
+			split = true
+		default:
+			if split {
+				before = append(before, m)
+			} else {
+				after = append(after, m)
+			}
 		}
 	}
-	if !split {
+	if !split && !divider {
 		return after, before
 	}
 	return
@@ -128,15 +132,18 @@ func (mas matches) splitOn(tyype int) (before matches, after matches) {
 // Words2Number takes in a string and returns a floating point
 func (c *Converter) Words2Number(words string) float64 {
 	var matches matches
+	for _, m := range c.digitPattern.FindAllStringIndex(words, -1) {
+		d := words[m[0]:m[1]]
+		n, _ := strconv.Atoi(d) // TODO: handle this potential error
+		matches = append(matches, newMatch(countKey, m, words, n))
+	}
 	for _, count := range c.counters {
-		ms := count.pattern.FindAllStringIndex(words, -1)
-		for _, m := range ms {
+		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
 			matches = append(matches, newMatch(countKey, m, words, count.value))
 		}
 	}
 	for _, count := range c.multipliers {
-		ms := count.pattern.FindAllStringIndex(words, -1)
-		for _, m := range ms {
+		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
 			matches = append(matches, newMatch(multiKey, m, words, count.value))
 		}
 	}
@@ -146,8 +153,7 @@ func (c *Converter) Words2Number(words string) float64 {
 		}
 	}
 	for _, count := range c.dividers {
-		ms := count.pattern.FindAllStringIndex(words, -1)
-		for _, m := range ms {
+		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
 			matches = append(matches, newMatch(dividerKey, m, words, count.value))
 		}
 	}
