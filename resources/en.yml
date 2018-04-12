@@ -1,0 +1,103 @@
+en:
+  decimals: 
+    - word: point
+    - word: and
+  counters:
+    - word: zero
+      number: 0
+    - word: oh
+      number: 0
+    - word: one
+      number: 1
+    - word: two
+      number: 2
+    - word: three
+      number: 3
+    - word: four
+      number: 4
+    - word: five
+      number: 5
+    - word: six
+      number: 6
+    - word: seven
+      number: 7
+    - word: eight
+      number: 8
+    - word: nine
+      number: 9
+    - word: ten
+      number: 10
+    - word: eleven
+      number: 11
+    - word: twelve
+      number: 12
+    - word: thriteen
+      number: 13
+    - word: fourteen
+      number: 14
+    - word: fifteen
+      number: 15
+    - word: sixteen
+      number: 16
+    - word: seventeen
+      number: 17
+    - word: eighteen
+      number: 18
+    - word: nineteen
+      number: 19
+    - word: twenty
+      number: 20
+    - word: thirty
+      number: 30
+    - word: fourty
+      number: 40
+    - word: fifty
+      number: 50
+    - word: sixty
+      number: 60
+    - word: seventy
+      number: 70
+    - word: eighty
+      number: 80
+    - word: ninety
+      number: 90
+  multipliers:
+    - word: hundred
+      number: 100
+    - word: thousand
+      number: 1000
+    - word: million
+      number: 1000000
+    - word: billion
+      number: 1000000000
+    - word: trillion
+      number: 1000000000000
+  dividers:
+    - word: tenth
+      number: 10
+    - word: tenths
+      number: 10
+    - word: hundredth
+      number: 100
+    - word: hundredths
+      number: 100
+    - word: cent
+      number: 100
+    - word: cents
+      number: 100
+    - word: thousandth
+      number: 1000
+    - word: thousandths
+      number: 1000
+    - word: millionth
+      number: 1000000
+    - word: millionths
+      number: 1000000
+    - word: billionth
+      number: 1000000000
+    - word: billionths
+      number: 1000000000
+    - word: trillionth
+      number: 1000000000000
+    - word: trillionths
+      number: 1000000000000
