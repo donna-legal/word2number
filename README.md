@@ -51,7 +51,7 @@ Extensions:
 
 * More languages. It would be somewhat easy to extend with other languages that are constructed the same way, like Swedish or Spanish.
 * Misspellings. One could extend the resources with common misspellings.
-* Concatenations. Some people might write seventyfive instead of seventy-five. This is definitely necessary for Spanish and English.
+* Concatenations. Some people might write seventyfive instead of seventy-five. This is definitely necessary for Spanish and Swedish.
 
 ## Contribute
 
