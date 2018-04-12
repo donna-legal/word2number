@@ -46,3 +46,13 @@ Needs improvement:
 
 * Decimal numbers. The simpler cases work just fine (eg. _one point three hundredths_ = 1.03), but there are quite a few failing test cases
 * Things like _One point two billion_ doesn't check out at the moment either. 
+
+Extensions:
+
+* More languages. It would be somewhat easy to extend with other languages that are constructed the same way, like Swedish or Spanish.
+* Misspellings. One could extend the resources with common misspellings.
+* Concatenations. Some people might write seventyfive instead of seventy-five. This is definitely necessary for Spanish and English.
+
+## Contribute
+
+If you use this program and find short-comings. Please start a fork or add issues. We appreciate it deeply.
