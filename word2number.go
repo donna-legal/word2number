@@ -1,6 +1,7 @@
 package word2number
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -13,11 +14,12 @@ import (
 
 // Converter keeps the necessary information to convert words to numbers
 type Converter struct {
-	lang        string
-	counters    []counterType
-	multipliers []counterType
-	dividers    []counterType
-	decimals    []*regexp.Regexp
+	lang         string
+	counters     []counterType
+	multipliers  []counterType
+	dividers     []counterType
+	decimals     []*regexp.Regexp
+	digitPattern *regexp.Regexp
 }
 
 type counterType struct {
@@ -26,47 +28,42 @@ type counterType struct {
 }
 
 // NewConverter creates a new word2number converter
-func NewConverter(lang string) (*Converter, error) {
-	c := &Converter{lang: lang}
-	decimals := resources.ArrayMap(lang, "decimals")
-	for _, m := range decimals {
-		pattern, err := regexp.Compile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
-		if err != nil {
-			return nil, err
-		}
+func NewConverter(locale string) (*Converter, error) {
+	if !resources.HasLocale(locale) {
+		return nil, errors.New("language not supported: " + locale)
+	}
+	c := &Converter{lang: locale}
+	c.digitPattern = regexp.MustCompile(`\b\d+\b`)
+
+	for _, m := range resources.ArrayMap(locale, "decimals") {
+		pattern := regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
 		c.decimals = append(c.decimals, pattern)
 	}
-	counters := resources.ArrayMap(lang, "counters")
-	for _, counter := range counters {
-		ct, err := newCounterType(counter)
-		if err != nil {
-			return nil, err
-		}
+
+	for _, counter := range resources.ArrayMap(locale, "counters") {
+		ct := newCounterType(counter)
 		c.counters = append(c.counters, ct)
 	}
-	for _, multi := range resources.ArrayMap(lang, "multipliers") {
-		ct, err := newCounterType(multi)
-		if err != nil {
-			return nil, err
-		}
+
+	for _, multi := range resources.ArrayMap(locale, "multipliers") {
+		ct := newCounterType(multi)
 		c.multipliers = append(c.multipliers, ct)
 	}
-	for _, m := range resources.ArrayMap(lang, "dividers") {
-		ct, err := newCounterType(m)
-		if err != nil {
-			return nil, err
-		}
+
+	for _, m := range resources.ArrayMap(locale, "dividers") {
+		ct := newCounterType(m)
 		c.dividers = append(c.dividers, ct)
 	}
 	return c, nil
 }
 
-func newCounterType(m map[string]string) (c counterType, err error) {
-	c.pattern, err = regexp.Compile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
-	if err != nil {
-		return c, err
-	}
+func newCounterType(m map[string]string) (c counterType) {
+	var err error
+	c.pattern = regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
 	c.value, err = strconv.Atoi(m["number"])
+	if err != nil {
+		panic(err)
+	}
 	return
 }
 

@@ -17,6 +17,12 @@ func init() {
 	readFolders(arraymap, "resources")
 }
 
+// HasLocale checks if a certain locale is in the resources
+func HasLocale(locale string) bool {
+	_, ok := arraymap[locale]
+	return ok
+}
+
 //ArrayMap returns an array of a map of values
 func ArrayMap(locale, key string) (out []map[string]string) {
 	if _, ok := arraymap[locale]; ok {
