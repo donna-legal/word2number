@@ -23,7 +23,7 @@ type Converter struct {
 }
 
 type counterType struct {
-	value   int
+	value   float64
 	pattern *regexp.Regexp
 }
 
@@ -33,7 +33,7 @@ func NewConverter(locale string) (*Converter, error) {
 		return nil, errors.New("language not supported: " + locale)
 	}
 	c := &Converter{lang: locale}
-	c.digitPattern = regexp.MustCompile(`\b\d+\b`)
+	c.digitPattern = regexp.MustCompile(`\b\d+(\.\d+)?\b`)
 
 	for _, m := range resources.ArrayMap(locale, "decimals") {
 		pattern := regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
@@ -60,7 +60,7 @@ func NewConverter(locale string) (*Converter, error) {
 func newCounterType(m map[string]string) (c counterType) {
 	var err error
 	c.pattern = regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
-	c.value, err = strconv.Atoi(m["number"])
+	c.value, err = strconv.ParseFloat(m["number"], 64)
 	if err != nil {
 		panic(err)
 	}
@@ -74,7 +74,7 @@ const (
 	decimalKey
 )
 
-func newMatch(t int, m []int, words string, value int) match {
+func newMatch(t int, m []int, words string, value float64) match {
 	return match{
 		value:   words[m[0]:m[1]],
 		tyype:   t,
@@ -86,8 +86,8 @@ func newMatch(t int, m []int, words string, value int) match {
 
 type match struct {
 	value   string
+	numeric float64
 	tyype   int
-	numeric int
 	start   int
 	end     int
 }
@@ -134,7 +134,7 @@ func (c *Converter) Words2Number(words string) float64 {
 	var matches matches
 	for _, m := range c.digitPattern.FindAllStringIndex(words, -1) {
 		d := words[m[0]:m[1]]
-		n, _ := strconv.Atoi(d) // TODO: handle this potential error
+		n, _ := strconv.ParseFloat(d, 64) // TODO: handle this potential error
 		matches = append(matches, newMatch(countKey, m, words, n))
 	}
 	for _, count := range c.counters {
@@ -159,8 +159,8 @@ func (c *Converter) Words2Number(words string) float64 {
 	}
 	sort.Sort(matches)
 	before, after := matches.splitOn(decimalKey)
-	sum := 0
-	multiplier := 1
+	sum := 0.0
+	multiplier := 1.0
 	for _, m := range before {
 		switch m.tyype {
 		case multiKey:
@@ -171,9 +171,9 @@ func (c *Converter) Words2Number(words string) float64 {
 		}
 	}
 	divideMode := true
-	divider := 1
-	multiplier = 1
-	dsum := 0
+	divider := 1.0
+	multiplier = 1.0
+	dsum := 0.0
 	for _, m := range after {
 		switch m.tyype {
 		case dividerKey:
@@ -191,9 +191,9 @@ func (c *Converter) Words2Number(words string) float64 {
 			divideMode = false
 		}
 	}
-	decimals := float64(dsum) / float64(divider)
+	decimals := dsum / divider
 	for decimals >= 1 {
 		decimals /= 10.0
 	}
-	return float64(sum) + decimals
+	return sum + decimals
 }

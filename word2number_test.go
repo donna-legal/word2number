@@ -39,6 +39,7 @@ func TestConverter_Words2Number(t *testing.T) {
 		{"seventy", 70},
 		{"eighty", 80},
 		{"ninety", 90},
+		{"niNeTy", 90},
 
 		// Simple multi-word
 		{"one hundred", 100},
@@ -53,7 +54,8 @@ func TestConverter_Words2Number(t *testing.T) {
 		{"two thousand three hundred seventy five", 2375},
 		{"two - thousand three hundred seventy five", 2375},
 		{"one million", 1000000},
-		{"1 million", 1000000}, // No actual digits accepted
+		{"1 million", 1000000},
+		{"1.2 million", 1200000},
 
 		// Decimals
 		{"oh point twenty-five", 0.25},
