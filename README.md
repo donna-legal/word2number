@@ -39,13 +39,13 @@ func main() {
 
 ## Now and the future
 
-Look in the test cases what works and what doesn't. 
+Look in the test cases what works and what doesn't.
 Most things to the left of the decimal point should work.
 
 Needs improvement:
 
 * Decimal numbers. The simpler cases work just fine (eg. _one point three hundredths_ = 1.03), but there are quite a few failing test cases
-* Things like _One point two billion_ doesn't check out at the moment either. 
+* Things like _One point two billion_ doesn't check out at the moment either.
 
 Extensions:
 
