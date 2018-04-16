@@ -68,7 +68,8 @@ func newCounterType(m map[string]string) (c counterType) {
 }
 
 const (
-	countKey = iota
+	none = iota
+	countKey
 	multiKey
 	dividerKey
 	decimalKey
@@ -99,14 +100,14 @@ func (mas matches) Len() int {
 }
 
 func (mas matches) Less(i, j int) bool {
-	return mas[i].start > mas[j].start
+	return mas[i].start < mas[j].start
 }
 
 func (mas matches) Swap(i, j int) {
 	mas[i], mas[j] = mas[j], mas[i]
 }
 
-func (mas matches) splitOn(tyype int) (before matches, after matches) {
+func (mas matches) splitOn() (before matches, after matches) {
 	var split, divider bool
 	for _, m := range mas {
 		switch m.tyype {
@@ -116,14 +117,14 @@ func (mas matches) splitOn(tyype int) (before matches, after matches) {
 		case decimalKey:
 			split = true
 		default:
-			if split {
+			if !split {
 				before = append(before, m)
 			} else {
 				after = append(after, m)
 			}
 		}
 	}
-	if !split && !divider {
+	if !split && divider {
 		return after, before
 	}
 	return
@@ -131,50 +132,59 @@ func (mas matches) splitOn(tyype int) (before matches, after matches) {
 
 // Words2Number takes in a string and returns a floating point
 func (c *Converter) Words2Number(words string) float64 {
-	var matches matches
+	var ms matches
 	for _, m := range c.digitPattern.FindAllStringIndex(words, -1) {
 		d := words[m[0]:m[1]]
 		n, _ := strconv.ParseFloat(d, 64) // TODO: handle this potential error
-		matches = append(matches, newMatch(countKey, m, words, n))
+		ms = append(ms, newMatch(countKey, m, words, n))
 	}
 	for _, count := range c.counters {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			matches = append(matches, newMatch(countKey, m, words, count.value))
+			ms = append(ms, newMatch(countKey, m, words, count.value))
 		}
 	}
 	for _, count := range c.multipliers {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			matches = append(matches, newMatch(multiKey, m, words, count.value))
+			ms = append(ms, newMatch(multiKey, m, words, count.value))
 		}
 	}
 	for _, d := range c.decimals {
 		for _, m := range d.FindAllStringIndex(words, -1) {
-			matches = append(matches, newMatch(decimalKey, m, words, 0))
+			ms = append(ms, newMatch(decimalKey, m, words, 0))
 		}
 	}
 	for _, count := range c.dividers {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			matches = append(matches, newMatch(dividerKey, m, words, count.value))
+			ms = append(ms, newMatch(dividerKey, m, words, count.value))
 		}
 	}
-	sort.Sort(matches)
-	before, after := matches.splitOn(decimalKey)
+	sort.Sort(ms)
+	before, after := ms.splitOn()
+	var lastMatch match
+	lastNum := 0.0
 	sum := 0.0
-	multiplier := 1.0
 	for _, m := range before {
 		switch m.tyype {
 		case multiKey:
-			multiplier *= m.numeric
+			lastNum *= m.numeric
 		case countKey:
-			sum += multiplier * m.numeric
-			multiplier = 1
+			if lastMatch.tyype != multiKey {
+				lastNum += m.numeric
+			} else {
+				sum += lastNum
+				lastNum = m.numeric
+			}
 		}
+		lastMatch = m
 	}
+	sum += lastNum
+
 	divideMode := true
 	divider := 1.0
-	multiplier = 1.0
+	multiplier := 1.0
 	dsum := 0.0
-	for _, m := range after {
+	for i := len(after) - 1; i >= 0; i-- {
+		m := after[i]
 		switch m.tyype {
 		case dividerKey:
 			divider = m.numeric
