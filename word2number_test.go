@@ -61,6 +61,7 @@ func TestConverter_Words2Number(t *testing.T) {
 		{"two hundred fifty thousand", 250000},
 		{"two hundred and fifty thousand", 250000},
 		{"two thousand and fifty million", 2050000000},
+		{"one million, three hundred nine thousand", 1309000},
 
 		// Decimals
 		{"oh point twenty-five", 0.25},

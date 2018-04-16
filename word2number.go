@@ -180,32 +180,26 @@ func (c *Converter) Words2Number(words string) float64 {
 	return sum + decimals
 }
 
-func getValues(before matches) float64 {
-	var lastMatch, lastMultiplier match
-	lastNum := 0.0
-	sum := 0.0
-	for _, m := range before {
+func getValues(vals matches) (out float64) {
+	var sums []float64
+	for _, m := range vals {
 		switch m.tyype {
-		case multiKey:
-			if lastMultiplier.tyype == multiKey && lastMultiplier != lastMatch && lastMultiplier.numeric < m.numeric {
-				sum += lastNum
-				sum *= m.numeric
-				lastNum = 0
-			} else {
-				lastNum *= m.numeric
-			}
-			lastMultiplier = m
 		case countKey:
-			if lastMatch.tyype != multiKey {
-				lastNum += m.numeric
-			} else {
-				sum += lastNum
-				lastNum = m.numeric
+			sums = append([]float64{m.numeric}, sums...)
+		case multiKey:
+			for i, s := range sums {
+				if s > m.numeric {
+					break
+				}
+				sums[i] *= m.numeric
 			}
 		}
-		lastMatch = m
 	}
-	return sum + lastNum
+	for _, s := range sums {
+		out += s
+	}
+	return
+
 }
 
 func getDecimals(after matches) float64 {
