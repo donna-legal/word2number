@@ -1,7 +1,11 @@
 en:
   decimals: 
     - word: point
+      weak: false
+  # Could be a decimal splitter: one and five tenths. 
+  # Could also just be a filler word: two hundred and fifty thousand.
     - word: and
+      weak: true 
   counters:
     - word: zero
       number: 0

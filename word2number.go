@@ -18,10 +18,13 @@ type Converter struct {
 	counters     []counterType
 	multipliers  []counterType
 	dividers     []counterType
-	decimals     []*regexp.Regexp
+	decimals     []decimalType
 	digitPattern *regexp.Regexp
 }
-
+type decimalType struct {
+	pattern *regexp.Regexp
+	weak    bool
+}
 type counterType struct {
 	value   float64
 	pattern *regexp.Regexp
@@ -37,7 +40,7 @@ func NewConverter(locale string) (*Converter, error) {
 
 	for _, m := range resources.ArrayMap(locale, "decimals") {
 		pattern := regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
-		c.decimals = append(c.decimals, pattern)
+		c.decimals = append(c.decimals, decimalType{pattern, m["weak"] == "true"})
 	}
 
 	for _, counter := range resources.ArrayMap(locale, "counters") {
@@ -73,6 +76,7 @@ const (
 	multiKey
 	dividerKey
 	decimalKey
+	weakDecimalKey
 )
 
 func newMatch(t int, m []int, words string, value float64) match {
@@ -108,24 +112,29 @@ func (mas matches) Swap(i, j int) {
 }
 
 func (mas matches) splitOn() (before matches, after matches) {
-	var split, divider bool
+	var split, weakSplit, divider bool
 	for _, m := range mas {
 		switch m.tyype {
-		case dividerKey:
-			divider = true
-			after = append(after, m)
 		case decimalKey:
 			split = true
+		case weakDecimalKey:
+			weakSplit = true
+		case dividerKey:
+			divider = true
+			fallthrough
 		default:
-			if !split {
+			if !split && !weakSplit {
 				before = append(before, m)
 			} else {
 				after = append(after, m)
 			}
 		}
 	}
-	if !split && divider {
+	if !split && !weakSplit && divider {
 		return after, before
+	}
+	if weakSplit && !divider {
+		return append(before, after...), matches{}
 	}
 	return
 }
@@ -149,8 +158,12 @@ func (c *Converter) Words2Number(words string) float64 {
 		}
 	}
 	for _, d := range c.decimals {
-		for _, m := range d.FindAllStringIndex(words, -1) {
-			ms = append(ms, newMatch(decimalKey, m, words, 0))
+		for _, m := range d.pattern.FindAllStringIndex(words, -1) {
+			t := decimalKey
+			if d.weak {
+				t = weakDecimalKey
+			}
+			ms = append(ms, newMatch(t, m, words, 0))
 		}
 	}
 	for _, count := range c.dividers {
@@ -160,13 +173,28 @@ func (c *Converter) Words2Number(words string) float64 {
 	}
 	sort.Sort(ms)
 	before, after := ms.splitOn()
-	var lastMatch match
+
+	sum := getValues(before)
+	decimals := getDecimals(after)
+
+	return sum + decimals
+}
+
+func getValues(before matches) float64 {
+	var lastMatch, lastMultiplier match
 	lastNum := 0.0
 	sum := 0.0
 	for _, m := range before {
 		switch m.tyype {
 		case multiKey:
-			lastNum *= m.numeric
+			if lastMultiplier.tyype == multiKey && lastMultiplier != lastMatch && lastMultiplier.numeric < m.numeric {
+				sum += lastNum
+				sum *= m.numeric
+				lastNum = 0
+			} else {
+				lastNum *= m.numeric
+			}
+			lastMultiplier = m
 		case countKey:
 			if lastMatch.tyype != multiKey {
 				lastNum += m.numeric
@@ -177,8 +205,10 @@ func (c *Converter) Words2Number(words string) float64 {
 		}
 		lastMatch = m
 	}
-	sum += lastNum
+	return sum + lastNum
+}
 
+func getDecimals(after matches) float64 {
 	divideMode := true
 	divider := 1.0
 	multiplier := 1.0
@@ -205,5 +235,5 @@ func (c *Converter) Words2Number(words string) float64 {
 	for decimals >= 1 {
 		decimals /= 10.0
 	}
-	return sum + decimals
+	return decimals
 }
