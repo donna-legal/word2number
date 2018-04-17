@@ -79,10 +79,15 @@ func TestConverter_Words2Number(t *testing.T) {
 		{"one and seventy seven hundred thousandths", 1.00077},
 		{"seven-hundred-seventy-seven", 777},
 		{"seven-hundred-seventy-seven", 777},
+		{"fifty cents", 0.5},
 		// {"one and seven-hundred-seventy-seven-thousandths", 1.777}, // Rounding error. Strange
 		{"zero and seven hundredths", 0.07},
 		// {"one and seven-hundred-seventy-seven ten-thousandths", 1.0777}, // ten-thousandths doesn't work. "ten" is only a multiplier to the right of the decimal
 		{"one and seven-hundred-seventy-seven hundred thousandths", 1.00777},
+
+		// Stupid versions
+		{"hundred thousand", 100000},
+		{"three hundred and twelve US dollars and fifty cents", 312.50},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {

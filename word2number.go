@@ -117,6 +117,10 @@ func (mas matches) splitOn() (before matches, after matches) {
 		switch m.tyype {
 		case decimalKey:
 			split = true
+			// Reset potential weak split
+			weakSplit = false
+			before = append(before, after...)
+			after = matches{}
 		case weakDecimalKey:
 			weakSplit = true
 		case dividerKey:
@@ -187,6 +191,9 @@ func getValues(vals matches) (out float64) {
 		case countKey:
 			sums = append([]float64{m.numeric}, sums...)
 		case multiKey:
+			if len(sums) == 0 {
+				sums = []float64{1}
+			}
 			for i, s := range sums {
 				if s > m.numeric {
 					break

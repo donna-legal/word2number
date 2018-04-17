@@ -2,6 +2,10 @@ en:
   decimals: 
     - word: point
       weak: false
+    - word: dollars
+      weak: false
+    - word: euros
+      weak: false
   # Could be a decimal splitter: one and five tenths. 
   # Could also just be a filler word: two hundred and fifty thousand.
     - word: and
