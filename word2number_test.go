@@ -88,6 +88,7 @@ func TestConverter_Words2Number(t *testing.T) {
 		// Stupid versions
 		{"hundred thousand", 100000},
 		{"three hundred and twelve US dollars and fifty cents", 312.50},
+		{"seventyfive", 75},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {

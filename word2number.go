@@ -62,7 +62,7 @@ func NewConverter(locale string) (*Converter, error) {
 
 func newCounterType(m map[string]string) (c counterType) {
 	var err error
-	c.pattern = regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
+	c.pattern = regexp.MustCompile(fmt.Sprintf(`(?i)%s`, m["word"]))
 	c.value, err = strconv.ParseFloat(m["number"], 64)
 	if err != nil {
 		panic(err)
@@ -70,81 +70,20 @@ func newCounterType(m map[string]string) (c counterType) {
 	return
 }
 
-const (
-	none = iota
-	countKey
-	multiKey
-	dividerKey
-	decimalKey
-	weakDecimalKey
-)
-
-func newMatch(t int, m []int, words string, value float64) match {
-	return match{
-		value:   words[m[0]:m[1]],
-		tyype:   t,
-		numeric: value,
-		start:   m[0],
-		end:     m[1],
-	}
-}
-
-type match struct {
-	value   string
-	numeric float64
-	tyype   int
-	start   int
-	end     int
-}
-
-type matches []match
-
-func (mas matches) Len() int {
-	return len(mas)
-}
-
-func (mas matches) Less(i, j int) bool {
-	return mas[i].start < mas[j].start
-}
-
-func (mas matches) Swap(i, j int) {
-	mas[i], mas[j] = mas[j], mas[i]
-}
-
-func (mas matches) splitOn() (before matches, after matches) {
-	var split, weakSplit, divider bool
-	for _, m := range mas {
-		switch m.tyype {
-		case decimalKey:
-			split = true
-			// Reset potential weak split
-			weakSplit = false
-			before = append(before, after...)
-			after = matches{}
-		case weakDecimalKey:
-			weakSplit = true
-		case dividerKey:
-			divider = true
-			fallthrough
-		default:
-			if !split && !weakSplit {
-				before = append(before, m)
-			} else {
-				after = append(after, m)
-			}
-		}
-	}
-	if !split && !weakSplit && divider {
-		return after, before
-	}
-	if weakSplit && !divider {
-		return append(before, after...), matches{}
-	}
-	return
-}
-
 // Words2Number takes in a string and returns a floating point
 func (c *Converter) Words2Number(words string) float64 {
+	ms := c.findMatches(words)
+	ms.removeOverlaps()
+	sort.Sort(ms)
+	before, after := ms.splitOn()
+
+	sum := getValues(before)
+	decimals := getDecimals(after)
+
+	return sum + decimals
+}
+
+func (c *Converter) findMatches(words string) matches {
 	var ms matches
 	for _, m := range c.digitPattern.FindAllStringIndex(words, -1) {
 		d := words[m[0]:m[1]]
@@ -175,13 +114,7 @@ func (c *Converter) Words2Number(words string) float64 {
 			ms = append(ms, newMatch(dividerKey, m, words, count.value))
 		}
 	}
-	sort.Sort(ms)
-	before, after := ms.splitOn()
-
-	sum := getValues(before)
-	decimals := getDecimals(after)
-
-	return sum + decimals
+	return ms
 }
 
 func getValues(vals matches) (out float64) {
