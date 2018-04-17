@@ -98,3 +98,33 @@ func TestConverter_Words2Number(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_Number2Words(t *testing.T) {
+	c, _ := NewConverter("en")
+	tests := []struct {
+		want1  string
+		want2  string
+		number float64
+	}{
+		// Simple
+		{"one", "", 1},
+		{"two", "", 2},
+		{"three", "", 3},
+		{"one thousand", "", 1000},
+		{"two million", "", 2000000},
+		{"twenty two", "", 22},
+		{"one hundred ten", "", 110},
+		{"two thousand five hundred", "", 2500},
+		{"two million five hundred fifty five thousand three hundred sixty seven", "", 2555367},
+
+		{"", "fifty", 0.50},
+		{"eighteen", "seventy three", 18.73},
+	}
+	for i, tt := range tests {
+		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {
+			if got1, got2 := c.Number2Words(tt.number, 2); got1 != tt.want1 || got2 != tt.want2 {
+				t.Errorf("Converter.Words2Number(%.2f) = (%s, %s), want %s, %s", tt.number, got1, got2, tt.want1, tt.want2)
+			}
+		})
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/donna-legal/word2number/resources"
 )
@@ -20,6 +21,7 @@ type Converter struct {
 	dividers     []counterType
 	decimals     []decimalType
 	digitPattern *regexp.Regexp
+	words        map[int]string
 }
 type decimalType struct {
 	pattern *regexp.Regexp
@@ -42,13 +44,15 @@ func NewConverter(locale string) (*Converter, error) {
 		pattern := regexp.MustCompile(fmt.Sprintf(`(?i)\b%s\b`, m["word"]))
 		c.decimals = append(c.decimals, decimalType{pattern, m["weak"] == "true"})
 	}
-
+	c.words = make(map[int]string)
 	for _, counter := range resources.ArrayMap(locale, "counters") {
+		c.addToWords(counter)
 		ct := newCounterType(counter)
 		c.counters = append(c.counters, ct)
 	}
 
 	for _, multi := range resources.ArrayMap(locale, "multipliers") {
+		c.addToWords(multi)
 		ct := newCounterType(multi)
 		c.multipliers = append(c.multipliers, ct)
 	}
@@ -66,6 +70,71 @@ func newCounterType(m map[string]string) (c counterType) {
 	c.value, err = strconv.ParseFloat(m["number"], 64)
 	if err != nil {
 		panic(err)
+	}
+	return
+}
+
+func (c *Converter) addToWords(m map[string]string) {
+	i, err := strconv.Atoi(m["number"])
+	if err != nil {
+		panic(err)
+	}
+	c.words[i] = m["word"]
+}
+
+// Number2Words takes a number and returns the words for the given number
+func (c *Converter) Number2Words(number float64, decimals int) (string, string) {
+	var words []string
+	before := int(number)
+	after := number - float64(before)
+	_ = after
+	groups := getGroups(before)
+	for i, g := range groups {
+		words = append(words, c.groupToWords(g)...)
+		if p := powerOf(1000, len(groups)-i); p > 1 && g > 0 {
+			words = append(words, c.words[p])
+		}
+	}
+
+	var afterWords []string
+	groups = getGroups(int(after * float64(powerOf(10, decimals+1))))
+	for i, g := range groups {
+		afterWords = append(afterWords, c.groupToWords(g)...)
+		if p := powerOf(1000, len(groups)-i); p > 1 && g > 0 {
+			afterWords = append(afterWords, c.words[p])
+		}
+	}
+	return strings.Join(words, " "), strings.Join(afterWords, " ")
+}
+
+func powerOf(base, k int) int {
+	o := 1
+	for i := 1; i < k; i++ {
+		o *= base
+	}
+	return o
+}
+
+func getGroups(num int) (out []int) {
+	for num > 0 {
+		out = append([]int{num % 1000}, out...)
+		num /= 1000
+	}
+	return
+}
+
+func (c *Converter) groupToWords(g int) (out []string) {
+	if g >= 100 {
+		out = append(out, c.words[g/100])
+		out = append(out, c.words[100])
+		g %= 100
+	}
+	if g >= 20 {
+		out = append(out, c.words[(g/10)*10])
+		g %= 10
+	}
+	if g > 0 {
+		out = append(out, c.words[g])
 	}
 	return
 }
