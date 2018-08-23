@@ -81,17 +81,21 @@ en:
     - word: trillion
       number: 1000000000000
   dividers:
+    - word: cent
+      number: 100
+      multipliable: false
+    - word: cents
+      number: 100
+      multipliable: false
     - word: tenth
       number: 10
+      multipliable: false
     - word: tenths
       number: 10
+      multipliable: false
     - word: hundredth
       number: 100
     - word: hundredths
-      number: 100
-    - word: cent
-      number: 100
-    - word: cents
       number: 100
     - word: thousandth
       number: 1000

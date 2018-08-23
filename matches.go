@@ -9,22 +9,24 @@ const (
 	weakDecimalKey
 )
 
-func newMatch(t int, m []int, words string, value float64) match {
+func newMatch(t int, m []int, words string, value float64, multipliable bool) match {
 	return match{
-		value:   words[m[0]:m[1]],
-		tyype:   t,
-		numeric: value,
-		start:   m[0],
-		end:     m[1],
+		value:        words[m[0]:m[1]],
+		tyype:        t,
+		numeric:      value,
+		start:        m[0],
+		end:          m[1],
+		multipliable: multipliable,
 	}
 }
 
 type match struct {
-	value   string
-	numeric float64
-	tyype   int
-	start   int
-	end     int
+	value        string
+	numeric      float64
+	tyype        int
+	start        int
+	end          int
+	multipliable bool
 }
 
 type matches []match

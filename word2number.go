@@ -28,8 +28,9 @@ type decimalType struct {
 	weak    bool
 }
 type counterType struct {
-	value   float64
-	pattern *regexp.Regexp
+	value        float64
+	multipliable bool
+	pattern      *regexp.Regexp
 }
 
 // NewConverter creates a new word2number converter
@@ -59,6 +60,10 @@ func NewConverter(locale string) (*Converter, error) {
 
 	for _, m := range resources.ArrayMap(locale, "dividers") {
 		ct := newCounterType(m)
+		ct.multipliable = true
+		if m["multipliable"] == "false" {
+			ct.multipliable = false
+		}
 		c.dividers = append(c.dividers, ct)
 	}
 	return c, nil
@@ -157,16 +162,16 @@ func (c *Converter) findMatches(words string) matches {
 	for _, m := range c.digitPattern.FindAllStringIndex(words, -1) {
 		d := words[m[0]:m[1]]
 		n, _ := strconv.ParseFloat(d, 64) // TODO: handle this potential error
-		ms = append(ms, newMatch(countKey, m, words, n))
+		ms = append(ms, newMatch(countKey, m, words, n, true))
 	}
 	for _, count := range c.counters {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			ms = append(ms, newMatch(countKey, m, words, count.value))
+			ms = append(ms, newMatch(countKey, m, words, count.value, true))
 		}
 	}
 	for _, count := range c.multipliers {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			ms = append(ms, newMatch(multiKey, m, words, count.value))
+			ms = append(ms, newMatch(multiKey, m, words, count.value, true))
 		}
 	}
 	for _, d := range c.decimals {
@@ -175,12 +180,12 @@ func (c *Converter) findMatches(words string) matches {
 			if d.weak {
 				t = weakDecimalKey
 			}
-			ms = append(ms, newMatch(t, m, words, 0))
+			ms = append(ms, newMatch(t, m, words, 0, true))
 		}
 	}
 	for _, count := range c.dividers {
 		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
-			ms = append(ms, newMatch(dividerKey, m, words, count.value))
+			ms = append(ms, newMatch(dividerKey, m, words, count.value, count.multipliable))
 		}
 	}
 	return ms
@@ -216,27 +221,31 @@ func getDecimals(after matches) float64 {
 	divider := 1.0
 	multiplier := 1.0
 	dsum := 0.0
+	multipliable := false
 	for i := len(after) - 1; i >= 0; i-- {
 		m := after[i]
 		switch m.tyype {
 		case dividerKey:
 			divider = m.numeric
+			multipliable = m.multipliable || multipliable
 		case multiKey:
-			if divideMode {
+			if divideMode && multipliable {
 				divider *= m.numeric
 			} else {
 				multiplier *= m.numeric
 			}
-
 		case countKey:
 			dsum += multiplier * m.numeric
 			multiplier = 1
 			divideMode = false
+			multipliable = false
 		}
 	}
 	decimals := dsum / divider
-	for decimals >= 1 {
-		decimals /= 10.0
+	if divider >= .999 && divider < 1.001 {
+		for decimals >= 1 {
+			decimals /= 10.0
+		}
 	}
 	return decimals
 }

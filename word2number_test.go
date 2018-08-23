@@ -89,6 +89,13 @@ func TestConverter_Words2Number(t *testing.T) {
 		{"hundred thousand", 100000},
 		{"three hundred and twelve US dollars and fifty cents", 312.50},
 		{"seventyfive", 75},
+
+		// percent and cent
+		{"one hundred percent", 1.00},
+		{"ninety nine percent", 0.99},
+		{"seventy percent", .7},
+		{"seventy cents", .7},
+		{"two hundred fifty cents", 2.5},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {
