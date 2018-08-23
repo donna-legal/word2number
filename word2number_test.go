@@ -5,6 +5,36 @@ import (
 	"testing"
 )
 
+func TestConvert_sv(t *testing.T) {
+	c, err := NewConverter("sv")
+	if err != nil {
+		t.Error(err)
+		t.Fail()
+	}
+	tests := []struct {
+		words string
+		want  float64
+	}{
+		// Simple
+		{"en", 1},
+		{"ett", 1},
+		{"två", 2},
+		{"tre", 3},
+		{"fyra", 4},
+		{"fem", 5},
+		{"sex", 6},
+		{"etthundrafemtio", 150},
+		{"tusen kronor och femtio öre", 1000.50},
+	}
+	for i, tt := range tests {
+		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {
+			if got := c.Words2Number(tt.words); got != tt.want {
+				t.Errorf("Converter.Words2Number(%s) = %v, want %v", tt.words, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestConverter_Words2Number(t *testing.T) {
 	c, _ := NewConverter("en")
 	tests := []struct {

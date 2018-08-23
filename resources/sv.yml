@@ -1,0 +1,115 @@
+sv:
+  decimals: 
+    - word: komma
+      weak: false
+    - word: kronor
+      weak: false
+    - word: euro
+      weak: false
+    - word: dollar
+      weak: false
+  # Could be a decimal splitter: one and five tenths. 
+  # Could also just be a filler word: two hundred and fifty thousand.
+    - word: och
+      weak: true 
+  counters:
+    - word: noll
+      number: 0
+    - word: ett
+      number: 1
+    - word: en
+      number: 1
+    - word: två
+      number: 2
+    - word: tre
+      number: 3
+    - word: fyra
+      number: 4
+    - word: fem
+      number: 5
+    - word: sex
+      number: 6
+    - word: sju
+      number: 7
+    - word: åtta
+      number: 8
+    - word: nio
+      number: 9
+    - word: tio
+      number: 10
+    - word: elva
+      number: 11
+    - word: tolv
+      number: 12
+    - word: tretton
+      number: 13
+    - word: fjorton
+      number: 14
+    - word: femton
+      number: 15
+    - word: sexton
+      number: 16
+    - word: sjutton
+      number: 17
+    - word: arton
+      number: 18
+    - word: nitton
+      number: 19
+    - word: tjugo
+      number: 20
+    - word: trettio
+      number: 30
+    - word: fyrtio
+      number: 40
+    - word: femtio
+      number: 50
+    - word: sextio
+      number: 60
+    - word: sjuttio
+      number: 70
+    - word: åttio
+      number: 80
+    - word: nittio
+      number: 90
+  multipliers:
+    - word: hundra
+      number: 100
+    - word: tusen
+      number: 1000
+    - word: miljon
+      number: 1000000
+    - word: miljard
+      number: 1000000000
+    - word: biljon
+      number: 1000000000000
+  dividers:
+    - word: öre
+      number: 100
+      multipliable: false
+    - word: ören
+      number: 100
+      multipliable: false
+    - word: cent
+      number: 100
+      multipliable: false
+    - word: cents
+      number: 100
+      multipliable: false
+    - word: tiondel
+      number: 10
+      multipliable: false
+    - word: tiondelar
+      number: 10
+      multipliable: false
+    - word: hundradel
+      number: 100
+    - word: hundradelar
+      number: 100
+    - word: tusendel
+      number: 1000
+    - word: tusendelar
+      number: 1000
+    - word: miljontedel
+      number: 1000000
+    - word: miljontedelar
+      number: 1000000
