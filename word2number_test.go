@@ -25,6 +25,8 @@ func TestConvert_sv(t *testing.T) {
 		{"sex", 6},
 		{"etthundrafemtio", 150},
 		{"tusen kronor och femtio öre", 1000.50},
+		{"hundrafemtio procent", 1.5},
+		{"hundrafemtio promille", 0.15},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {
@@ -122,10 +124,12 @@ func TestConverter_Words2Number(t *testing.T) {
 
 		// percent and cent
 		{"one hundred percent", 1.00},
-		{"ninety nine percent", 0.99},
-		{"seventy percent", .7},
+		{"hundred percent", 1.00},
+		{"two point five percent", 0.025},
+		{"ninety nine percent", .99},
+		{"seventy percent", 0.7},
 		{"seventy cents", .7},
-		{"two hundred fifty cents", 2.5},
+		{"two hundred fifty percent", 2.50},
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprint("testcase-", i), func(t *testing.T) {

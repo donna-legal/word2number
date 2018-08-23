@@ -80,6 +80,19 @@ en:
       number: 1000000000
     - word: trillion
       number: 1000000000000
+  percent:
+    - word: percent
+      number: 100
+    - word: per cent
+      number: 100
+    - word: per mille
+      number: 1000
+    - word: permille
+      number: 1000
+    - word: per mil
+      number: 1000
+    - word: permil
+      number: 1000
   dividers:
     - word: cent
       number: 100

@@ -19,6 +19,7 @@ type Converter struct {
 	counters     []counterType
 	multipliers  []counterType
 	dividers     []counterType
+	percents     []counterType
 	decimals     []decimalType
 	digitPattern *regexp.Regexp
 	words        map[int]string
@@ -65,6 +66,11 @@ func NewConverter(locale string) (*Converter, error) {
 			ct.multipliable = false
 		}
 		c.dividers = append(c.dividers, ct)
+	}
+	for _, m := range resources.ArrayMap(locale, "percent") {
+		ct := newCounterType(m)
+		ct.multipliable = true
+		c.percents = append(c.percents, ct)
 	}
 	return c, nil
 }
@@ -154,7 +160,7 @@ func (c *Converter) Words2Number(words string) float64 {
 	sum := getValues(before)
 	decimals := getDecimals(after)
 
-	return sum + decimals
+	return (sum + decimals) / getPercent(ms)
 }
 
 func (c *Converter) findMatches(words string) matches {
@@ -188,6 +194,11 @@ func (c *Converter) findMatches(words string) matches {
 			ms = append(ms, newMatch(dividerKey, m, words, count.value, count.multipliable))
 		}
 	}
+	for _, count := range c.percents {
+		for _, m := range count.pattern.FindAllStringIndex(words, -1) {
+			ms = append(ms, newMatch(percentKey, m, words, count.value, count.multipliable))
+		}
+	}
 	return ms
 }
 
@@ -217,6 +228,7 @@ func getValues(vals matches) (out float64) {
 }
 
 func getDecimals(after matches) float64 {
+	hasDivided := false
 	divideMode := true
 	divider := 1.0
 	multiplier := 1.0
@@ -228,6 +240,7 @@ func getDecimals(after matches) float64 {
 		case dividerKey:
 			divider = m.numeric
 			multipliable = m.multipliable || multipliable
+			hasDivided = true
 		case multiKey:
 			if divideMode && multipliable {
 				divider *= m.numeric
@@ -241,11 +254,21 @@ func getDecimals(after matches) float64 {
 			multipliable = false
 		}
 	}
+	if multiplier > 1 {
+		dsum += multiplier
+	}
 	decimals := dsum / divider
-	if divider >= .999 && divider < 1.001 {
-		for decimals >= 1 {
-			decimals /= 10.0
-		}
+	for !hasDivided && decimals >= 1 {
+		decimals /= 10.0
 	}
 	return decimals
+}
+
+func getPercent(ms matches) float64 {
+	for _, m := range ms {
+		if m.tyype == percentKey {
+			return m.numeric
+		}
+	}
+	return 1
 }

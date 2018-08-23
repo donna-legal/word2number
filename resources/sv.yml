@@ -82,6 +82,11 @@ sv:
       number: 1000000000
     - word: biljon
       number: 1000000000000
+  percent:
+    - word: procent
+      number: 100
+    - word: promille
+      number: 1000
   dividers:
     - word: öre
       number: 100

@@ -7,6 +7,7 @@ const (
 	dividerKey
 	decimalKey
 	weakDecimalKey
+	percentKey
 )
 
 func newMatch(t int, m []int, words string, value float64, multipliable bool) match {
